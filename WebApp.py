@@ -2,28 +2,95 @@ import gradio as gr
 import numpy as np
 import pandas as pd
 import pickle
+from sklearn.preprocessing import StandardScaler
 
 #Dictionaries to use for the data
-asp = dict{
+asp = {
     'Standard':'std',
    'Turbo':'turbo'
 }
 
+drivew = {
+    'Rear wheel drive': 'rwd',
+    'Front wheel drive': 'fwd', 
+    '4 wheel drive': '4wd'
+}
 
+cylnum = {
+    2: 'two',
+    3: 'three', 
+    4: 'four',
+    5: 'five', 
+    6: 'six', 
+    8: 'eight',
+    12: 'twelve'
+}
+
+
+#Function to model data to fit the model
+def transform(data):
+    #Scale the data
+    sc= StandardScaler()
+
+    lasso_reg = pickle.load(open('model.pkl','rb'))
+
+    #Columns of the df
+    cols = pd.read_csv('df_columns')
+    cols  = cols.columns[1:-1]
+    print(cols)
+
+    #Dummy columns of the dummy df
+    cols_to_use = pd.read_csv('dummy_df')
+
+    #cols_old = ['CarName', 'fueltype', 'aspiration', 'doornumber', 'carbody',
+    #   'drivewheel', 'enginelocation', 'wheelbase', 'carlength', 'carwidth',
+    #   'carheight', 'curbweight', 'enginetype', 'cylindernumber', 'enginesize',
+    #   'fuelsystem', 'boreratio', 'horsepower', 'citympg', 'highwaympg']
+    #print(cols_old)
+    #print(cols == cols_old)
+    new_df = pd.DataFrame([data],columns = cols)
+    #print(new_df)
+
+    cat = []
+    num = []
+    for col in new_df.columns: 
+        if new_df[col].dtypes == 'object': 
+            cat.append(col)
+        else: 
+            num.append(col)
+    #print(cat)
+    #print(num)
+    x1_new = pd.get_dummies(new_df[cat], drop_first = False)
+    #print(x1_new)
+    x2_new = new_df[num]
+    #print(x2_new)
+    X_new = pd.concat([x2_new,x1_new], axis = 1)
+    #print(X_new)
+
+    final_df = pd.DataFrame(columns = cols_to_use)
+    final_df = pd.concat([final_df, X_new])
+    final_df = final_df.fillna(0)
+    #print(final_df)
+
+    X_new = final_df.values
+    #print(X_new)
+    
+    
+    X_new[:, :(len(x1_new.columns))]= sc.transform(X_new[:, :(len(x1_new.columns))])
+
+    output = lasso_reg.predict(X_new)
+    return np.exp(output)
 
 #Main function to predict price
 def predict_price(car, fueltype, aspiration, doornumber, carbody, drivewheel, enginelocation, wheelbase, carlength, carwidth, 
                 carheight, curbweight, enginetype, cylindernumber, enginesize, fuelsystem, boreratio, horsepower, citympg, highwaympg): 
-    car = car.lower()
-    print(car)
-    fueltype = fueltype.lower()
-    print(fueltype)
-    doornumber = doornumber.lower()
 
+    new_data = [car.lower(), fueltype.lower(), asp[aspiration], doornumber.lower(), carbody, drivew[drivewheel], enginelocation.lower(),
+                wheelbase, carlength, carwidth, carheight, curbweight, enginetype, cylnum[cylindernumber], enginesize, fuelsystem, 
+                boreratio, horsepower, citympg, highwaympg]
     
+    return transform(new_data)
     
-    
-    #model = pickle.load(open('model.pkl','rb'))
 
 car = gr.Dropdown(label = "Car brand", choices=['Alfa-Romero', 'Audi', 'BMW', 'Chevrolet', 'Dodge', 'Honda',
        'Isuzu', 'Jaguar', 'Mazda', 'Buick', 'Mercury', 'Mitsubishi',
