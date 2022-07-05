@@ -36,20 +36,14 @@ def transform(data):
 
     #Columns of the df
     cols = pd.read_csv('df_columns')
-    cols  = cols.columns[1:-1]
-    print(cols)
+    cols  = list(cols.columns[1:-1])
 
     #Dummy columns of the dummy df
     cols_to_use = pd.read_csv('dummy_df')
+    cols_to_use = list(cols_to_use.columns[1:])
 
-    #cols_old = ['CarName', 'fueltype', 'aspiration', 'doornumber', 'carbody',
-    #   'drivewheel', 'enginelocation', 'wheelbase', 'carlength', 'carwidth',
-    #   'carheight', 'curbweight', 'enginetype', 'cylindernumber', 'enginesize',
-    #   'fuelsystem', 'boreratio', 'horsepower', 'citympg', 'highwaympg']
-    #print(cols_old)
-    #print(cols == cols_old)
+    #Dataframe with the new data
     new_df = pd.DataFrame([data],columns = cols)
-    #print(new_df)
 
     cat = []
     num = []
@@ -58,28 +52,22 @@ def transform(data):
             cat.append(col)
         else: 
             num.append(col)
-    #print(cat)
-    #print(num)
+
+    #Creating the values to feed the model
     x1_new = pd.get_dummies(new_df[cat], drop_first = False)
-    #print(x1_new)
     x2_new = new_df[num]
-    #print(x2_new)
     X_new = pd.concat([x2_new,x1_new], axis = 1)
-    #print(X_new)
 
     final_df = pd.DataFrame(columns = cols_to_use)
     final_df = pd.concat([final_df, X_new])
     final_df = final_df.fillna(0)
-    #print(final_df)
 
     X_new = final_df.values
-    #print(X_new)
     
-    
-    X_new[:, :(len(x1_new.columns))]= sc.transform(X_new[:, :(len(x1_new.columns))])
+    X_new[:, :(len(x1_new.columns))]= sc.fit_transform(X_new[:, :(len(x1_new.columns))])
 
     output = lasso_reg.predict(X_new)
-    return np.exp(output)
+    return "The price of the car " + str(round(np.exp(output)[0],2)) + "$"
 
 #Main function to predict price
 def predict_price(car, fueltype, aspiration, doornumber, carbody, drivewheel, enginelocation, wheelbase, carlength, carwidth, 
@@ -125,17 +113,17 @@ cylindernumber = gr.Radio(label = "Cylinder number", choices = [2, 3, 4, 5, 6, 8
 
 enginesize = gr.Slider(label = "Engine size (swept volume of all the pistons inside the cylinders)", minimum = 50, maximum = 500)
 
-fuelsystem = gr.Dropdown(label = "Fuel system", choices = ['mpfi', '2bbl', 'mfi', '1bbl', 'spfi', '4bbl', 'idi', 'spdi'])
+fuelsystem = gr.Dropdown(label = "Fuel system (link to ressource: ", choices = ['mpfi', '2bbl', 'mfi', '1bbl', 'spfi', '4bbl', 'idi', 'spdi'])
 
 boreratio = gr.Slider(label = "Bore ratio (ratio between cylinder bore diameter and piston stroke)", minimum = 1, maximum = 6)
 
 horsepower = gr.Slider(label = "Horse power of the car", minimum = 25, maximum = 400)
 
-citympg = gr.Slider(label = "Mileage in city", minimum = 0, maximum = 100)
+citympg = gr.Slider(label = "Mileage in city (in km)", minimum = 0, maximum = 100)
 
-highwaympg = gr.Slider(label = "Mileage on highway", minimum = 0, maximum = 100)
+highwaympg = gr.Slider(label = "Mileage on highway (in km)", minimum = 0, maximum = 100)
 
-output = gr.Textbox()
+Output = gr.Textbox()
 
 app = gr.Interface(title="Predict the price of a car based on its specs", 
                     fn=predict_price,
@@ -160,7 +148,6 @@ app = gr.Interface(title="Predict the price of a car based on its specs",
                             citympg, 
                             highwaympg
                             ],
-                    outputs=output)
+                    outputs=Output)
 
 app.launch()
-#print(model)
