@@ -1,5 +1,8 @@
 numpy
 pandas
 scikit-learn
-gunicorn
 gradio
+Flask
+argparse
+gunicorn
+rq
