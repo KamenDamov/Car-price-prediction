@@ -150,4 +150,4 @@ app = gr.Interface(title="Predict the price of a car based on its specs",
                             ],
                     outputs=Output)
 
-app.launch()
+#app.launch()
