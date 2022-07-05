@@ -1,14 +1,5 @@
 numpy
 pandas
 scikit-learn
-pywebio
-Flask
-argparse
 gunicorn
-rq
-tensorflow
-textblob
-keras
-langid
-nltk
 gradio
