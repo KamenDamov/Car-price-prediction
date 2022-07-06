@@ -26,7 +26,6 @@ cylnum = {
     12: 'twelve'
 }
 
-
 #Function to model data to fit the model
 def transform(data):
     #Scale the data
@@ -35,12 +34,36 @@ def transform(data):
     lasso_reg = pickle.load(open('model.pkl','rb'))
 
     #Columns of the df
-    cols = pd.read_csv('df_columns')
-    cols  = list(cols.columns[1:-1])
+    cols = ['CarName', 'fueltype', 'aspiration', 'doornumber', 'carbody', 'drivewheel', 'enginelocation', 'wheelbase', 'carlength', 'carwidth', 'carheight', 
+    'curbweight', 'enginetype', 'cylindernumber', 'enginesize', 'fuelsystem', 'boreratio', 'horsepower', 'citympg', 'highwaympg']
 
     #Dummy columns of the dummy df
-    cols_to_use = pd.read_csv('dummy_df')
-    cols_to_use = list(cols_to_use.columns[1:])
+    cols_to_use = ['wheelbase', 'carlength', 'carwidth', 'carheight',\
+         'curbweight', 'enginesize', 'boreratio', 'horsepower', \
+             'citympg', 'highwaympg', 'CarName_alfa-romero',\
+                  'CarName_audi', 'CarName_bmw', 'CarName_buick',\
+                       'CarName_chevrolet', 'CarName_dodge', 'CarName_honda',\
+                            'CarName_isuzu', 'CarName_jaguar', 'CarName_mazda', 'CarName_mercury', \
+                                'CarName_mitsubishi', 'CarName_nissan', 'CarName_peugeot', 'CarName_plymouth', \
+                                    'CarName_porsche', 'CarName_renault', 'CarName_saab', 'CarName_subaru', 'CarName_toyota',\
+                                         'CarName_volkswagen', 'CarName_volvo', 'fueltype_diesel', 'fueltype_gas', 'aspiration_std',\
+                                              'aspiration_turbo', 'doornumber_four', 
+                                              'doornumber_two', 'carbody_convertible',
+                                               'carbody_hardtop', 'carbody_hatchback', 
+                                               'carbody_sedan', 'carbody_wagon',
+                                                'drivewheel_4wd', 'drivewheel_fwd', 
+                                                'drivewheel_rwd', 'enginelocation_front',
+                                                 'enginelocation_rear', 'enginetype_dohc',
+                                                  'enginetype_dohcv', 'enginetype_l',
+                                                   'enginetype_ohc', 'enginetype_ohcf',
+                                                    'enginetype_ohcv', 'enginetype_rotor',
+                                                     'cylindernumber_eight', 'cylindernumber_five',
+                                                      'cylindernumber_four', 'cylindernumber_six',
+                                                       'cylindernumber_three', 'cylindernumber_twelve',
+                                                        'cylindernumber_two', 'fuelsystem_1bbl',
+                                                         'fuelsystem_2bbl', 'fuelsystem_4bbl',
+                                                          'fuelsystem_idi', 'fuelsystem_mfi',
+                                                           'fuelsystem_mpfi', 'fuelsystem_spdi', 'fuelsystem_spfi']
 
     #Dataframe with the new data
     new_df = pd.DataFrame([data],columns = cols)
@@ -150,4 +173,4 @@ app = gr.Interface(title="Predict the price of a car based on its specs",
                             ],
                     outputs=Output)
 
-app.launch(share=True)
+app.launch()
