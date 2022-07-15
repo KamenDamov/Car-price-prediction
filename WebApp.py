@@ -26,48 +26,46 @@ cylnum = {
     12: 'twelve'
 }
 
+#Columns of the df
+df = pd.read_csv('df_columns')
+df.drop(['Unnamed: 0','price'], axis = 1, inplace=True)
+cols = df.columns
+
+#Dummy columns of the dummy df
+dummy = pd.read_csv('dummy_df')
+dummy.drop('Unnamed: 0', axis = 1, inplace=True)
+cols_to_use = dummy.columns
+
+#Create the values in the app
+# Capitalizing first letter of cars
+cars = df['CarName'].unique().tolist()
+carNameCap = []
+for col in cars:
+    carNameCap.append(col.capitalize())
+
+#For fuel
+fuel = df['fueltype'].unique().tolist()
+fuelCap = []
+for fu in fuel:
+    fuelCap.append(fu.capitalize())
+
+#For carbod, engine type, fuel systme
+carb = df['carbody'].unique().tolist() 
+engtype = df['enginetype'].unique().tolist()
+fuelsys = df['fuelsystem'].unique().tolist()
+
 #Function to model data to fit the model
 def transform(data):
     #Scale the data
     sc= StandardScaler()
 
+    #Import the model
     lasso_reg = pickle.load(open('model.pkl','rb'))
-
-    #Columns of the df
-    cols = ['CarName', 'fueltype', 'aspiration', 'doornumber', 'carbody', 'drivewheel', 'enginelocation', 'wheelbase', 'carlength', 'carwidth', 'carheight', 
-    'curbweight', 'enginetype', 'cylindernumber', 'enginesize', 'fuelsystem', 'boreratio', 'horsepower', 'citympg', 'highwaympg']
-
-    #Dummy columns of the dummy df
-    cols_to_use = ['wheelbase', 'carlength', 'carwidth', 'carheight',\
-         'curbweight', 'enginesize', 'boreratio', 'horsepower', \
-             'citympg', 'highwaympg', 'CarName_alfa-romero',\
-                  'CarName_audi', 'CarName_bmw', 'CarName_buick',\
-                       'CarName_chevrolet', 'CarName_dodge', 'CarName_honda',\
-                            'CarName_isuzu', 'CarName_jaguar', 'CarName_mazda', 'CarName_mercury', \
-                                'CarName_mitsubishi', 'CarName_nissan', 'CarName_peugeot', 'CarName_plymouth', \
-                                    'CarName_porsche', 'CarName_renault', 'CarName_saab', 'CarName_subaru', 'CarName_toyota',\
-                                         'CarName_volkswagen', 'CarName_volvo', 'fueltype_diesel', 'fueltype_gas', 'aspiration_std',\
-                                              'aspiration_turbo', 'doornumber_four', 
-                                              'doornumber_two', 'carbody_convertible',
-                                               'carbody_hardtop', 'carbody_hatchback', 
-                                               'carbody_sedan', 'carbody_wagon',
-                                                'drivewheel_4wd', 'drivewheel_fwd', 
-                                                'drivewheel_rwd', 'enginelocation_front',
-                                                 'enginelocation_rear', 'enginetype_dohc',
-                                                  'enginetype_dohcv', 'enginetype_l',
-                                                   'enginetype_ohc', 'enginetype_ohcf',
-                                                    'enginetype_ohcv', 'enginetype_rotor',
-                                                     'cylindernumber_eight', 'cylindernumber_five',
-                                                      'cylindernumber_four', 'cylindernumber_six',
-                                                       'cylindernumber_three', 'cylindernumber_twelve',
-                                                        'cylindernumber_two', 'fuelsystem_1bbl',
-                                                         'fuelsystem_2bbl', 'fuelsystem_4bbl',
-                                                          'fuelsystem_idi', 'fuelsystem_mfi',
-                                                           'fuelsystem_mpfi', 'fuelsystem_spdi', 'fuelsystem_spfi']
 
     #Dataframe with the new data
     new_df = pd.DataFrame([data],columns = cols)
 
+    #Splitting categorical vs numerical columns
     cat = []
     num = []
     for col in new_df.columns: 
@@ -100,21 +98,18 @@ def predict_price(car, fueltype, aspiration, doornumber, carbody, drivewheel, en
                 wheelbase, carlength, carwidth, carheight, curbweight, enginetype, cylnum[cylindernumber], enginesize, fuelsystem, 
                 boreratio, horsepower, citympg, highwaympg]
     
-    return transform(new_data)
-    
+    return transform(new_data) 
 
-car = gr.Dropdown(label = "Car brand", choices=['Alfa-Romero', 'Audi', 'BMW', 'Chevrolet', 'Dodge', 'Honda',
-       'Isuzu', 'Jaguar', 'Mazda', 'Buick', 'Mercury', 'Mitsubishi',
-       'Nissan', 'Peugeot', 'Plymouth', 'Porsche', 'Renault',
-       'Saab', 'Subaru', 'Toyota', 'Volkswagen', 'Volvo'])
 
-fueltype = gr.Radio(label = "Fuel Type", choices = ['Gas', 'Diesel'])
+car = gr.Dropdown(label = "Car brand", choices=carNameCap)
+
+fueltype = gr.Radio(label = "Fuel Type", choices = fuelCap)
 
 aspiration = gr.Radio(label = "Aspiration type", choices = ["Standard", "Turbo"])
 
 doornumber = gr.Radio(label = "Number of doors", choices = ["Two", "Four"])
 
-carbody = gr.Dropdown(label ="Car body type", choices = ['convertible', 'hatchback', 'sedan', 'wagon', 'hardtop'])
+carbody = gr.Dropdown(label ="Car body type", choices = carb)
 
 drivewheel = gr.Radio(label = "Drive wheel", choices = ['Rear wheel drive', 'Front wheel drive', '4 wheel drive'])
 
@@ -130,13 +125,13 @@ carheight = gr.Slider(label = "Height of the car (in inches)", minimum = 50, max
 
 curbweight = gr.Slider(label = "Weight of the car (in pounds)", minimum = 500, maximum = 6000)
 
-enginetype = gr.Dropdown(label = "Engine type", choices = ['dohc', 'ohcv', 'ohc', 'l', 'rotor', 'ohcf', 'dohcv'])
+enginetype = gr.Dropdown(label = "Engine type", choices = engtype)
 
 cylindernumber = gr.Radio(label = "Cylinder number", choices = [2, 3, 4, 5, 6, 8, 12])
 
 enginesize = gr.Slider(label = "Engine size (swept volume of all the pistons inside the cylinders)", minimum = 50, maximum = 500)
 
-fuelsystem = gr.Dropdown(label = "Fuel system (link to ressource: ", choices = ['mpfi', '2bbl', 'mfi', '1bbl', 'spfi', '4bbl', 'idi', 'spdi'])
+fuelsystem = gr.Dropdown(label = "Fuel system (link to ressource: ", choices = fuelsys)
 
 boreratio = gr.Slider(label = "Bore ratio (ratio between cylinder bore diameter and piston stroke)", minimum = 1, maximum = 6)
 
