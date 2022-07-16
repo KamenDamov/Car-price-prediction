@@ -78,16 +78,16 @@ def transform(data):
     x1_new = pd.get_dummies(new_df[cat], drop_first = False)
     x2_new = new_df[num]
     X_new = pd.concat([x2_new,x1_new], axis = 1)
-
+    
     final_df = pd.DataFrame(columns = cols_to_use)
     final_df = pd.concat([final_df, X_new])
     final_df = final_df.fillna(0)
+    final_df = pd.concat([final_df,dummy])
 
     X_new = final_df.values
-    
     X_new[:, :(len(x1_new.columns))]= sc.fit_transform(X_new[:, :(len(x1_new.columns))])
-
-    output = lasso_reg.predict(X_new)
+    print(X_new[-1].reshape(-1, 1))
+    output = lasso_reg.predict(X_new[-1].reshape(1, -1))
     return "The price of the car " + str(round(np.exp(output)[0],2)) + "$"
 
 #Main function to predict price
